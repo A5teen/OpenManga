@@ -21,6 +21,7 @@ import com.nostra13.universalimageloader.core.imageaware.ImageViewAware;
 
 import org.nv95.openmanga.R;
 import org.nv95.openmanga.components.TransitionDisplayer;
+import org.nv95.openmanga.components.reader.PagesCache;
 import org.nv95.openmanga.items.ThumbSize;
 
 import java.io.File;
@@ -36,6 +37,7 @@ public class ImageUtils {
 
     private static DisplayImageOptions mOptionsThumb = null;
     private static DisplayImageOptions mOptionsUpdate = null;
+    private static PagesCache mPagesCache = null;
 
     public static void init(Context context) {
         if (!ImageLoader.getInstance().isInited()) {
@@ -74,6 +76,9 @@ public class ImageUtils {
             mOptionsUpdate = getImageLoaderOptionsBuilder()
                     .displayer(new TransitionDisplayer())
                     .build();
+        }
+        if (mPagesCache == null) {
+            mPagesCache = new PagesCache(new File(context.getExternalCacheDir(), "pages"));
         }
     }
 
@@ -134,5 +139,9 @@ public class ImageUtils {
                 imageView,
                 mOptionsUpdate
         );
+    }
+
+    public static PagesCache getPagesCache() {
+        return mPagesCache;
     }
 }

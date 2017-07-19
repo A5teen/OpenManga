@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.nv95.openmanga.items.RESTResponse;
+import org.nv95.openmanga.providers.staff.MangaProviderManager;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -37,6 +38,7 @@ public class NetworkUtils {
     public static final String HTTP_POST = "POST";
     public static final String HTTP_PUT = "PUT";
     public static final String HTTP_DELETE = "DELETE";
+    private static final String HTTP_HEAD = "HEAD";
 
     public static boolean setUseTor(Context context, boolean enabled) {
         boolean isTor = NetCipher.getProxy() == NetCipher.ORBOT_HTTP_PROXY;
@@ -234,5 +236,21 @@ public class NetworkUtils {
 
     private static boolean isOk(int responseCode) {
         return responseCode >= 200 && responseCode < 300;
+    }
+
+    public static long getContentLength(String url) {
+        try {
+            HttpURLConnection con = NetCipher.getHttpURLConnection(url);
+            if (con instanceof HttpsURLConnection) {
+                ((HttpsURLConnection) con).setSSLSocketFactory(NoSSLv3SocketFactory.getInstance());
+            }
+            MangaProviderManager.prepareConnection(con);
+            con.setRequestMethod(HTTP_HEAD);
+            con.setConnectTimeout(15000);
+            return con.getContentLength();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 }

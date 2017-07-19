@@ -14,7 +14,7 @@ import org.nv95.openmanga.helpers.StorageHelper;
 import org.nv95.openmanga.items.DownloadInfo;
 import org.nv95.openmanga.items.MangaChapter;
 import org.nv95.openmanga.items.MangaPage;
-import org.nv95.openmanga.items.SimpleDownload;
+import org.nv95.openmanga.utils.downloads.SimpleDownload;
 
 import java.io.File;
 import java.util.Date;

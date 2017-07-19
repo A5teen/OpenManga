@@ -1,4 +1,4 @@
-package org.nv95.openmanga.items;
+package org.nv95.openmanga.utils.downloads;
 
 import org.nv95.openmanga.providers.staff.MangaProviderManager;
 import org.nv95.openmanga.utils.NoSSLv3SocketFactory;
@@ -17,18 +17,15 @@ import info.guardianproject.netcipher.NetCipher;
 /**
  * Created by nv95 on 12.02.16.
  */
-public class SimpleDownload implements Runnable {
+public class SimpleDownload extends Download {
 
-    private final String mSourceUrl;
-    private final File mDestination;
 
-    public SimpleDownload(String sourceUrl, File destination) {
-        this.mSourceUrl = sourceUrl;
-        this.mDestination = destination;
+    public SimpleDownload(String url, File destination) {
+        super(url, destination);
     }
 
     @Override
-    public void run() {
+    public void download() {
         InputStream input = null;
         OutputStream output = null;
         HttpURLConnection connection = null;
@@ -43,7 +40,7 @@ public class SimpleDownload implements Runnable {
                 return;
             }
             input = connection.getInputStream();
-            output = new FileOutputStream(mDestination);
+            output = new FileOutputStream(mDestinationFile);
             byte data[] = new byte[4096];
             int count;
             while ((count = input.read(data)) != -1) {
@@ -53,8 +50,8 @@ public class SimpleDownload implements Runnable {
                 }
             }
         } catch (Exception e) {
-            if (mDestination.exists()) {
-                mDestination.delete();
+            if (mDestinationFile.exists()) {
+                mDestinationFile.delete();
             }
         } finally {
             try {
@@ -67,17 +64,5 @@ public class SimpleDownload implements Runnable {
             if (connection != null)
                 connection.disconnect();
         }
-    }
-
-    public boolean isSuccess() {
-        return mDestination.exists();
-    }
-
-    public File getDestination() {
-        return mDestination;
-    }
-
-    public String getSourceUrl() {
-        return mSourceUrl;
     }
 }

@@ -4,23 +4,15 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 
-import com.nostra13.universalimageloader.cache.disc.DiskCache;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.utils.DiskCacheUtils;
 import com.nostra13.universalimageloader.utils.IoUtils;
 
 import org.nv95.openmanga.providers.MangaProvider;
 import org.nv95.openmanga.providers.staff.MangaProviderManager;
-import org.nv95.openmanga.utils.NoSSLv3SocketFactory;
+import org.nv95.openmanga.utils.ImageUtils;
+import org.nv95.openmanga.utils.downloads.Download;
 
 import java.io.File;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-
-import javax.net.ssl.HttpsURLConnection;
-
-import info.guardianproject.netcipher.NetCipher;
 
 /**
  * Created by nv95 on 16.11.16.
@@ -64,7 +56,7 @@ public class PageLoadTask extends AsyncTask<Integer,Integer,Object> {
                 return mPageWrapper.page.path;
             }
             String url = mProvider.getPageImage(mPageWrapper.page);
-            DiskCache cache = ImageLoader.getInstance().getDiskCache();
+            /*DiskCache cache = ImageLoader.getInstance().getDiskCache();
             File file = DiskCacheUtils.findInCache(url, cache);
             if (file != null) {
                 return file.getAbsolutePath();
@@ -92,7 +84,30 @@ public class PageLoadTask extends AsyncTask<Integer,Integer,Object> {
                 return file.getAbsolutePath();
             } else {
                 return null;
+            }*/
+            PagesCache cache = ImageUtils.getPagesCache();
+            File file = cache.get(url);
+            if (file.exists()) {
+                return file.getPath();
             }
+            File tempFile = new File(file.getAbsolutePath() + ".tmp");
+            Download download = Download.getSupported(url, tempFile, 0);
+            download.setCopyListener(new IoUtils.CopyListener() {
+                @Override
+                public boolean onBytesCopied(int current, int total) {
+                    int percent = total > 0 ? current * 100 / total : 0;
+                    if (total > 0) {
+                        publishProgress(percent);
+                    }
+                    return !isCancelled() || percent > 80;
+                }
+            });
+            download.run();
+            if (!download.isSuccess()) {
+                return null;
+            }
+            tempFile.renameTo(file);
+            return file.getPath();
         } catch (Exception e) {
             return e;
         }
